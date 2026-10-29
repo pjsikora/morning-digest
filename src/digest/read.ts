@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { DigestRow, Night, ReadNight, RunStatus } from './types.js';
+import type { DigestRow, Night, ReadNight, RunStatus, StatusCounts } from './types.js';
 
 type Line = { at: string; job: string; status: RunStatus; owner: string | null; error: string | null };
 
@@ -68,3 +68,23 @@ export const readNight: ReadNight = (runsDir, night) => {
   }
   return { night, ...digestLines(text) };
 };
+
+export function countStatuses(text: string): StatusCounts {
+  const counts: StatusCounts = { ok: 0, retry: 0, fail: 0 };
+  for (const raw of text.split('\n')) {
+    if (raw.trim() === '') continue;
+    const line = parseLine(raw);
+    if (line) counts[line.status]++;
+  }
+  return counts;
+}
+
+// null when the night has no file.
+export function readCounts(runsDir: string, night: string): StatusCounts | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(night)) return null;
+  try {
+    return countStatuses(readFileSync(join(runsDir, `${night}.jsonl`), 'utf8'));
+  } catch {
+    return null;
+  }
+}

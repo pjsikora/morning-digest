@@ -22,3 +22,6 @@ export type Night = {
 
 // Reads `<runsDir>/<night>.jsonl`. Returns null when the night has no file.
 export type ReadNight = (runsDir: string, night: string) => Night | null;
+
+// Lines per status across a night's file; lines that don't parse are not counted.
+export type StatusCounts = Record<RunStatus, number>;
